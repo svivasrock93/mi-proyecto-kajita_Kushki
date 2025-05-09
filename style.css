@@ -1,0 +1,26 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+#kajita-container {
+  margin: 20px 0;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+}
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#payment-result {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 4px;
+  background: #f4f4f4;
+}

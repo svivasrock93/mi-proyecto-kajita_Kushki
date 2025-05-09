@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago con Kushki</title>
+    <script src="https://cdn.kushkipagos.com/kushki-checkout.js?cache=1"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #payment-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        #payment-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Pago Seguro</h1>
+    <div id="payment-container">
+        <div id="kushki-form"></div>
+    </div>
+    <div id="payment-result"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof KushkiCheckout === 'undefined') {
+                showError('Error: No se pudo cargar la pasarela de pagos. Recarga la página.');
+                return;
+            }
+
+            try {
+                // Inicializa KushkiCheckout
+                var kushki = new KushkiCheckout({
+                    kformId: "WsL9kP-vQ",
+                    form: "kushki-form", // ID del contenedor
+                    publicMerchantId: "a090a070ee794a8e8f6992be632631ab",
+                    inTestEnvironment: true,
+                    amount: {
+                        subtotalIva: 0,
+                        iva: 0,
+                        subtotalIva0: 1790 // $17.90 en centavos
+                    },
+                    onTokenGenerated: function(token) {
+                        showMessage('Token generado: ' + token.token, 'success');
+                        // Llama a la lógica de pago de app.js (o refactoriza)
+                        processPayment(token.token);
+                    },
+                    onError: function(error) {
+                        showError('Error en el formulario: ' + error.message);
+                    }
+                });
+
+                console.log('Formulario de pago inicializado correctamente');
+
+                function processPayment(token) {
+                    showMessage('Procesando pago...', 'info');
+
+                    fetch('/api/charge', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            token: token,
+                            amount: 17.90 // Usamos el mismo monto aquí
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (response.ok) { // Verifica si la respuesta HTTP es exitosa (2xx)
+                            if (data.success) {
+                                showMessage('✅ Pago exitoso! Ticket: ' + data.ticket, 'success');
+                            } else {
+                                showError('❌ Error en el pago: ' + data.error);
+                            }
+                        } else {
+                            showError(`❌ Error en el pago (HTTP ${response.status}): ${data.error || 'Error desconocido'}`);
+                        }
+                    })
+                    .catch(error => {
+                        showError('Error al procesar: ' + error.message);
+                    });
+                }
+
+
+            } catch (error) {
+                showError('Error al inicializar: ' + error.message);
+                console.error('Error:', error);
+            }
+        });
+
+        function showMessage(message, type) {
+            const element = document.getElementById('payment-result');
+            element.innerHTML = message;
+            element.className = type || '';
+        }
+
+        function showError(message) {
+            console.error(message);
+            showMessage(message, 'error');
+        }
+    </script>
+</body>
+
+</html>
